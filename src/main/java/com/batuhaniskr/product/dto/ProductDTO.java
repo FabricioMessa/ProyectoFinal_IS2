@@ -1,5 +1,6 @@
 package com.batuhaniskr.product.dto;
 
+import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Min;
 import java.math.BigDecimal;
 
@@ -10,6 +11,7 @@ public class ProductDTO {
 
     @Min(0)
     private Integer quantity;
+    @DecimalMin("0.0")
     private BigDecimal price;
     private CategoryDTO category;
 
