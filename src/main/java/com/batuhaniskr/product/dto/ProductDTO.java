@@ -1,6 +1,7 @@
 package com.batuhaniskr.product.dto;
 
 import javax.validation.constraints.Min;
+import java.math.BigDecimal;
 
 public class ProductDTO {
 
@@ -9,7 +10,7 @@ public class ProductDTO {
 
     @Min(0)
     private Integer quantity;
-    private Float price;
+    private BigDecimal price;
     private CategoryDTO category;
 
     public String getName() {
@@ -28,11 +29,11 @@ public class ProductDTO {
         this.quantity = quantity;
     }
 
-    public Float getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(Float price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 

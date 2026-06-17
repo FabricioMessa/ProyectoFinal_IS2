@@ -17,6 +17,8 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.math.BigDecimal;
+
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -45,7 +47,7 @@ public class ProductServiceTests {
         ProductDTO productDTO = new ProductDTO();
         productDTO.setId(1);
         productDTO.setName("Test");
-        productDTO.setPrice(100F);
+        productDTO.setPrice(new BigDecimal("100.00"));
         productDTO.setQuantity(3);
         CategoryDTO category = new CategoryDTO();
         category.setCategoryName("TestCategory");

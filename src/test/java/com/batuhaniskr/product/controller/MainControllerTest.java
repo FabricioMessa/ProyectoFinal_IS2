@@ -7,6 +7,8 @@ import com.batuhaniskr.product.service.CategoryService;
 import com.batuhaniskr.product.service.ProductService;
 import com.batuhaniskr.product.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.math.BigDecimal;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +53,7 @@ public class MainControllerTest {
         // Arrange
         ProductDTO productDTO = new ProductDTO();
         productDTO.setId(1);
-        productDTO.setPrice(-100F);
+        productDTO.setPrice(new BigDecimal("-100.00"));
 
         String productJson = new ObjectMapper().writeValueAsString(productDTO);
 
@@ -68,7 +70,7 @@ public class MainControllerTest {
         // Arrange
         ProductDTO productDTO = new ProductDTO();
         productDTO.setId(1);
-        productDTO.setPrice(0F);
+        productDTO.setPrice(BigDecimal.ZERO);
 
         String productJson = new ObjectMapper().writeValueAsString(productDTO);
 
@@ -141,7 +143,7 @@ public class MainControllerTest {
         // Arrange
         ProductDTO productDTO = new ProductDTO();
         productDTO.setId(1);
-        productDTO.setPrice(100F);
+        productDTO.setPrice(new BigDecimal("100.00"));
         productDTO.setQuantity(1);
 
         String productJson = new ObjectMapper().writeValueAsString(productDTO);
@@ -159,7 +161,7 @@ public class MainControllerTest {
         // Arrange
         ProductDTO productDTO = new ProductDTO();
         productDTO.setId(1);
-        productDTO.setPrice(100F);
+        productDTO.setPrice(new BigDecimal("100.00"));
         productDTO.setQuantity(1);
 
         String productJson = new ObjectMapper().writeValueAsString(productDTO);

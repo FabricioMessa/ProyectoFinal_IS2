@@ -1,6 +1,7 @@
 package com.batuhaniskr.product.model;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
@@ -17,8 +18,8 @@ public class Product {
     @Column(name = "quantity")
     private Integer quantity;
 
-    @Column(name = "price")
-    private Float price;
+    @Column(name = "price", precision = 10, scale = 2)
+    private BigDecimal price;
 
     @Column(name = "created_at", updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
@@ -52,11 +53,11 @@ public class Product {
         this.name = name;
     }
 
-    public Float getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(Float price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
