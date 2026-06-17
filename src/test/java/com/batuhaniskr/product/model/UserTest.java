@@ -2,6 +2,13 @@ package com.batuhaniskr.product.model;
 
 import org.junit.Test;
 
+import javax.persistence.CascadeType;
+import javax.persistence.ManyToMany;
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class UserTest {
@@ -29,5 +36,16 @@ public class UserTest {
 
         assertThat(result).contains("testuser");
         assertThat(result).contains("test@email.com");
+    }
+
+    @Test
+    public void roles_ShouldNotCascadeDelete() throws NoSuchFieldException {
+        Field rolesField = User.class.getDeclaredField("roles");
+        ManyToMany annotation = rolesField.getAnnotation(ManyToMany.class);
+        Set<CascadeType> cascadeTypes = Arrays.stream(annotation.cascade())
+                .collect(Collectors.toSet());
+
+        assertThat(cascadeTypes).doesNotContain(CascadeType.REMOVE);
+        assertThat(cascadeTypes).doesNotContain(CascadeType.ALL);
     }
 }
