@@ -13,23 +13,24 @@ import java.util.stream.Collectors;
 @Service
 public class CategoryService {
 
-    private CategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository;
+    private final ModelMapper modelMapper;
 
-    @Autowired
-    private ModelMapper modelMapper;
-
-    @Autowired
-    public CategoryService(CategoryRepository categoryRepository) {
+    @Autowired // Todo inyectado por constructor (Buenas prácticas)
+    public CategoryService(CategoryRepository categoryRepository, ModelMapper modelMapper) {
         this.categoryRepository = categoryRepository;
+        this.modelMapper = modelMapper;
     }
 
     public List<CategoryDTO> getAllCategory() {
         List<Category> categories = categoryRepository.findAll();
         return categories.stream()
-                .map(this::convertToCategoryToCategoryDTO).collect(Collectors.toList());
+                .map(this::toDTO) // Refactoring Issue #9: Referencia actualizada
+                .collect(Collectors.toList());
     }
 
-    private CategoryDTO convertToCategoryToCategoryDTO(Category category) {
+    // Refactoring Issue #9: Rename Method aplicado
+    private CategoryDTO toDTO(Category category) {
         return modelMapper.map(category, CategoryDTO.class);
     }
 }
