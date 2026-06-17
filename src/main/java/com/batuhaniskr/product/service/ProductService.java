@@ -15,12 +15,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ProductService {
+public class ProductService implements IProductService {
 
-    private ProductRepository productRepository;
-    private CategoryRepository categoryRepository;
-    private UserService userService;
-    private ModelMapper modelMapper;
+    private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
+    private final UserService userService;
+    private final ModelMapper modelMapper;
 
 
     @Autowired
