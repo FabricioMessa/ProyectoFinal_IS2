@@ -16,13 +16,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ProductService {
+public class ProductService implements IProductService {
 
-    private ProductRepository productRepository;
-    private CategoryRepository categoryRepository;
-    private UserService userService;
-    private ModelMapper modelMapper;
-
+    private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
+    private final UserService userService;
+    private final ModelMapper modelMapper;
 
     @Autowired
     public ProductService(ProductRepository productRepository,
@@ -35,19 +34,26 @@ public class ProductService {
         this.modelMapper = modelMapper;
     }
 
+    @Override
     public Page<ProductDTO> getAllProduct(Pageable pageable, String username) {
         User user = userService.findByEmail(username);
-        for (Role role: user.getRoles()) {
-            if (role.getName().equals("ROLE_ADMIN")) {
-                return productRepository.findAll(pageable)
-                        .map(x -> modelMapper.map(x, ProductDTO.class));
-            }
+        
+        if (isAdmin(user)) {
+            return productRepository.findAll(pageable)
+                    .map(x -> modelMapper.map(x, ProductDTO.class));
         }
 
         return productRepository.findByUser(pageable, user)
                 .map(x -> modelMapper.map(x, ProductDTO.class));
     }
 
+    // Método extraído (Responsabilidad Única)
+    private boolean isAdmin(User user) {
+        return user.getRoles().stream()
+                .anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
+    }
+
+    @Override
     public void saveProduct(ProductDTO productDTO, String email) {
         User user = userService.findByEmail(email);
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.LOOSE);
@@ -59,13 +65,14 @@ public class ProductService {
         productRepository.save(product);
     }
 
+    @Override
     public void deleteProduct(Integer id) {
         productRepository.delete(id);
     }
 
+    @Override
     public ProductDTO getProductById(Integer id) {
         Product product = productRepository.findOne(id);
-
         return modelMapper.map(product, ProductDTO.class);
     }
 }

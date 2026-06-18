@@ -12,16 +12,16 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections; // Import actualizado
 import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
 
-    private UserRepository userRepository;
-
-    private BCryptPasswordEncoder passwordEncoder;
+    // Aplicando buenas prácticas del Issue #4 (Inmutabilidad)
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
@@ -41,16 +41,20 @@ public class UserServiceImpl implements UserService {
                 mapRolesToAuthorities(user.getRoles()));
     }
 
+    @Override
     public User findByEmail(String email){
         return userRepository.findByEmail(email);
     }
 
+    @Override
     public User save(UserRegistrationDto registration){
         User user = new User();
         user.setUsername(registration.getUsername());
         user.setEmail(registration.getEmail());
         user.setPassword(passwordEncoder.encode(registration.getPassword()));
-        user.setRoles(Arrays.asList(new Role("ROLE_USER")));
+        
+        // Issue #13: Refactoring a singletonList (Inline Method conceptual)
+        user.setRoles(Collections.singletonList(new Role("ROLE_USER")));
 
         return userRepository.save(user);
     }
