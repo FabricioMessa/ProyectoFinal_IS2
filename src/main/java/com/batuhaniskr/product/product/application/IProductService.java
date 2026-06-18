@@ -1,6 +1,6 @@
 package com.batuhaniskr.product.product.application;
 
-import com.batuhaniskr.product.dto.ProductDTO;
+import com.batuhaniskr.product.product.domain.ProductDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

@@ -28,11 +28,9 @@ import java.util.stream.IntStream;
 @RequestMapping("/products")
 public class MainController {
 
-    private ProductService productService;
-    private CategoryService categoryService;
+    private final ProductService productService;
+    private final CategoryService categoryService;
 
-    private static int currentPage = 1;
-    private static int pageSize = 5;
     private static final Logger LOG = Logger.getLogger(MainController.class.getName());
 
     @Autowired
@@ -46,9 +44,8 @@ public class MainController {
                         @RequestParam("size") Optional<Integer> size,
                         @AuthenticationPrincipal UserDetails userDetails) {
 
-
-        page.ifPresent(p -> currentPage = p);
-        size.ifPresent(s -> pageSize = s);
+        int currentPage = page.orElse(1);
+        int pageSize = size.orElse(5);
 
         Pageable pageable = new PageRequest(currentPage - 1, pageSize);
         String userEmail = userDetails.getUsername();
@@ -104,7 +101,7 @@ public class MainController {
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)
-    public String handlerException() {
+    public String handleException() {
         return "error/404";
     }
 }
