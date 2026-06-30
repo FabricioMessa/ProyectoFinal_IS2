@@ -2,16 +2,19 @@ package com.batuhaniskr.product.category.presentation;
 
 import com.batuhaniskr.product.category.domain.CategoryDTO;
 import com.batuhaniskr.product.category.application.CategoryService;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Controller
-@RequestMapping("/categories")
+@RestController
+@RequestMapping("/api/categories")
+@Api(value = "Categorías", description = "API de categorías de productos")
 public class CategoryController {
 
     private final CategoryService categoryService;
@@ -21,8 +24,8 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
-    @GetMapping("/api")
-    @ResponseBody
+    @GetMapping
+    @ApiOperation(value = "Listar todas las categorías", notes = "Obtiene el catálogo completo de categorías para clasificar los productos")
     public List<CategoryDTO> getAllCategories() {
         return categoryService.getAllCategory();
     }
