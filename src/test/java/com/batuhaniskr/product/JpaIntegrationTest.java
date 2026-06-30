@@ -1,7 +1,7 @@
 package com.batuhaniskr.product;
 /*
-import com.batuhaniskr.product.model.Product;
-import com.batuhaniskr.product.repository.ProductRepository;
+import com.batuhaniskr.product.product.domain.Product;
+import com.batuhaniskr.product.product.infrastructure.ProductRepository;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
