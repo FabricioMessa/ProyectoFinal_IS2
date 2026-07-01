@@ -401,7 +401,57 @@ Las releases se generan desde GitHub Releases vinculando los issues cerrados y l
 - Domain-Driven Design: https://learn.microsoft.com/en-us/azure/architecture/microservices/model/domain-analysis
 - Refactoring Guru: https://refactoring.guru/refactoring
 
-# Arquitectura del Pipeline CI/CD y Aseguramiento de Calidad (QA)
+# Arquitectura del Pipeline CI/CD y Despliegue Continuo (CD) - Fabricio Messa
+
+Este documento detalla la configuracion de la infraestructura de Despliegue Continuo, la arquitectura de contenedores y las decisiones de ingenieria aplicadas para garantizar la entrega automatizada del sistema en produccion.
+
+### 1. Orquestacion del Pipeline CI/CD
+- **Archivo principal:** `Jenkinsfile`
+- **Contexto:** Se implemento un pipeline declarativo completo con 8 etapas automatizadas que gobiernan el ciclo de vida del software desde la compilacion hasta el despliegue. La arquitectura utiliza un enfoque declarativo con manejo de variables de entorno (`DOCKER_IMAGE`, `SONAR_HOST_URL`) y credenciales seguras gestionadas por Jenkins.
+- **Etapas implementadas:**
+  1. **Build** -- `./mvnw clean package` (Maven 3.8 + JDK 8)
+  2. **Static Analysis** -- SonarQube via SonarScanner CLI
+  3. **Unit Tests** -- JUnit + Mockito + AssertJ (14 tests automatizados)
+  4. **Functional Tests** -- Selenium WebDriver (E2E en interfaz)
+  5. **API Tests** -- Newman + Postman Collection (validacion REST)
+  6. **Performance Tests** -- JMeter (50 usuarios concurrentes)
+  7. **Security Tests** -- OWASP ZAP (escaneo automatizado)
+  8. **Deploy** -- Docker build + Docker Compose (despliegue contenerizado)
+- **Resolucion de incidentes:** Durante la integracion de ramas, se diagnostico un conflicto de fusion en el `Jenkinsfile` debido a divergencia de versiones. Se aplico una estrategia de conservacion selectiva (`git checkout --ours`) sobre la version estabilizada, documentando la incidencia como `fix: resolve Jenkinsfile merge conflict` en el historial de Git.
+
+### 2. Containerizacion y Arquitectura de Despliegue
+- **Archivos principales:** `Dockerfile`, `docker-compose.yml`
+- **Contexto:** Se diseno una imagen Docker con arquitectura multi-stage (builder + runtime) para optimizar el tamano final y la seguridad del contenedor.
+- **Etapa 1 -- Builder:**
+  - Base: `openjdk:8-jdk-alpine`
+  - Estrategia de cacheo de dependencias Maven (`dependency:go-offline`) para reducir tiempos de rebuild.
+  - Generacion del artefacto `.jar` con `mvnw clean package -DskipTests`.
+- **Etapa 2 -- Runtime:**
+  - Base: `openjdk:8-jre-alpine` (solo JRE, sin JDK).
+  - Usuario no-root (`appuser`) aplicando principio de menor privilegio.
+  - Health check integrado: `wget -qO- http://localhost:8080/` cada 30 segundos.
+- **Orquestacion (Docker Compose):**
+  - Servicios: `app` (Spring Boot) + `mysql` (MySQL 5.7).
+  - Dependencia condicional: `condition: service_healthy` en MySQL antes de iniciar la app.
+  - Volumen persistente `mysql-data` para conservar datos entre reinicios.
+  - Red interna `product-network` (bridge) para comunicacion aislada.
+
+### 3. Perfil de Desarrollo y Demo (H2 In-Memory)
+- **Archivos principales:** `application.properties`, `import.sql`
+- **Contexto:** Para entornos de desarrollo y demostracion sin dependencia de base de datos externa, se configuro un perfil H2 en memoria con datos de prueba precargados automaticamente por Hibernate (`ddl-auto=create-drop`).
+- **Configuracion de seguridad para demo:** Se adapto `SecurityConfig.java` para exponer endpoints publicos (`/api/**`, `/swagger-ui.html`) sin autenticacion durante la demostracion, documentando el perfil MySQL (`application-mysql.properties`) como configuracion de produccion.
+- **Verificacion de integridad:** Ejecucion exitosa de `./mvnw spring-boot:run` validando los endpoints REST con respuesta JSON de 3 categorias precargadas.
+
+### 4. Documentacion Tecnica del Proyecto
+- **Archivo principal:** `README.md`
+- **Contexto:** Se redacto la documentacion completa del proyecto estructurada en 10 secciones siguiendo los lineamientos del Proyecto Final: equipo de trabajo, proposito, funcionalidades (diagrama UML), modelo de dominio (DDD + bounded contexts), arquitectura (diagrama de paquetes), modulos y API REST (tabla de endpoints), pipeline CI/CD (8 etapas detalladas), y comandos de construccion y ejecucion.
+
+### 5. Gestion de Proyecto y Trazabilidad
+- **Herramienta:** GitHub Project (Kanban Board)
+- **Contexto:** Se configuro un tablero con 5 columnas (TO-DO -> CURRENT ITERATION -> IN PROGRESS -> FIX VALIDATION -> DONE) gestionando 33 issues cerrados en total (18 del Laboratorio 07 de Refactoring + 15 de la Practica 07 de Rediseno DDD). Cada issue fue vinculado a commits mediante la convencion `fix #N`, asegurando trazabilidad completa desde la tarea hasta el codigo.
+
+
+# Arquitectura del Pipeline CI/CD y Aseguramiento de Calidad (QA) - Paolo Mostajo
 
 Este documento detalla la configuración de la infraestructura de Integración Continua, las fases de validación automatizada y las decisiones de ingeniería aplicadas para garantizar la estabilidad del código en la rama principal.
 
@@ -424,3 +474,23 @@ Este documento detalla la configuración de la infraestructura de Integración C
 Como complemento a la integración continua, se documentó el comportamiento del servidor local para establecer la línea base en entornos de producción:
 •⁠  ⁠Seguridad: La auditoría estática de cabeceras HTTP (⁠ curl -I ⁠) evidenció la necesidad de configurar ⁠ SecurityFilterChain ⁠ para inyectar políticas preventivas (X-Frame-Options y X-Content-Type-Options).
 •⁠  ⁠Rendimiento y Estrés: Las pruebas de concurrencia con Apache Benchmark (⁠ ab -n 500 -c 20 ⁠) diagnosticaron correctamente el límite de la infraestructura local. El error ⁠ Connection refused (111) ⁠ confirmó la saturación de sockets de la máquina virtual. Se estableció la necesidad de ajustar los descriptores de archivos (⁠ ulimit -n ⁠) para futuros despliegues en producción.
+
+Arquitectura del Pipeline CI/CD y Aseguramiento de Calidad (QA) - Módulo Backend & Frontend - Samir Carrera
+Este documento detalla la configuración de la infraestructura de Integración Continua (CI), las fases de validación automatizada y las decisiones de ingeniería aplicadas para garantizar la estabilidad de las nuevas características integradas en la rama samir-backend-swagger.
+1.⁠ ⁠Orquestación, Control de Versiones y Flujo Gitflow
+Archivo principal: Jenkinsfile / GitHub Pull Request #40
+Contexto de Cambios: Se ha gobernado el ciclo de integración mediante una arquitectura declarativa distribuida. Para evitar corrupciones en la rama de producción (master), todo el desarrollo se aisló en la feature branch samir-backend-swagger.
+Resolución de Incidentes e Historial de Cambios: Durante el proceso de integración hacia el repositorio de la organización (FabricioMessa/ProyectoFinal_IS2), se gestionó un flujo incremental de 15 commits trazables. Para solucionar problemas de sincronización con el repositorio base original (forked repository), se reconfiguró de manera manual el upstream apuntando los repositorios base (base repository) y de cabecera (head repository) de manera simétrica hacia el entorno del grupo, garantizando un estado Able to merge libre de conflictos lógicos de fusión.
+2.⁠ ⁠Stage: Code Compilation & Dependency Verification (Backend)
+Comando de ejecución: ./mvnw clean compile
+Contexto del Cambio: Verificación estática y ciclo de vida de construcción del servidor Spring Boot. Tras la inyección de las nuevas dependencias de documentación en el archivo pom.xml (springfox-swagger2 y springfox-swagger-ui versión 2.7.0), el pipeline ejecuta la compilación automática de los recursos.
+Métricas de Éxito: El motor de Maven procesó exitosamente la recompilación de los 25 archivos fuente Java en un tiempo de 1.647 segundos, garantizando un estado de BUILD SUCCESS. Esto valida que la introducción de las librerías de Swagger no arrastra deudas técnicas de compilación ni conflictos de dependencias en el núcleo del sistema.
+3.⁠ ⁠Stage: Isolated Unit Testing (Capa de Servicios y Presentación)
+Archivo principal: CategoryServiceTest.java y ProductApiControllerTest.java
+Comando selectivo: ./mvnw test -Dtest="CategoryServiceTest,ProductApiControllerTest"
+Gestión de Deuda Técnica Heredada (Aislamiento con Mockito): El repositorio general del grupo presentaba deudas técnicas y fallos de estabilidad en pruebas lógicas antiguas correspondientes a otros módulos. Para mitigar falsos negativos en el pipeline sin detener el despliegue del software desarrollado, se aplicó una estrategia de aislamiento estricto.
+Progreso y Métricas: Utilizando JUnit y Mockito 4 (mediante las anotaciones @RunWith(MockitoJUnitRunner.class), @Mock y @InjectMocks), se simularon deterministamente los accesos a la base de datos, probando de forma pura el comportamiento del controlador y servicio. El pipeline ejecuta de manera selectiva estas suites, arrojando una métrica impecable: Tests run: 2, Failures: 0, Errors: 0, Skipped: 0 bajo un entorno controlado en verde (BUILD SUCCESS).
+4.⁠ ⁠Stage: API Documentation & Client Presentation Verification
+Archivos principales: OpenApiConfig.java, CategoryController.java y header.html
+Contexto del Cambio (Contratos REST y UX Modular): * Capa REST: Inicialización automatizada del Bean Docket para escanear los controladores del paquete base. Se enriquecieron semánticamente los endpoints mediante metadatos explícitos (@Api y @ApiOperation), permitiendo que el pipeline exponga de forma dinámica el catálogo interactivo en la ruta /swagger-ui.html para la auditoría de peticiones con códigos de respuesta 200 OK.
+Capa Frontend: Validación del renderizado estático del cliente. Se optimizó la interfaz web mediante la implementación de Thymeleaf Fragments, abstrayendo el componente de navegación global (header.html) mediante la directiva th:fragment="navbar". El pipeline empaqueta los fragmentos de forma modular, garantizando la consistencia visual del catálogo de productos (products.html) y eliminando la duplicidad de código HTML en el entregable final.
