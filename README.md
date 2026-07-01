@@ -23,8 +23,8 @@
 | Integrante | Rol |
 |------------|-----|
 | Fabricio Messa (Miembro A) | CI/CD Pipeline, Docker, SonarQube, Documentación |
-| Miembro B | Pruebas Funcionales, Performance, Seguridad |
-| Miembro C | API REST, Swagger, Frontend, Pruebas Unitarias |
+| Paolo Mostajo | Pruebas Funcionales, Performance, Seguridad |
+| Samir Carrera | API REST, Swagger, Frontend, Pruebas Unitarias |
 
 ---
 
