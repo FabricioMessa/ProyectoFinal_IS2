@@ -1,0 +1,7 @@
+{
+	"info": { "name": "Product System API", "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json" },
+	"item": [
+		{ "name": "Listar Productos", "request": { "method": "GET", "url": "http://localhost:8080/api/products" } },
+		{ "name": "Get Categorías", "request": { "method": "GET", "url": "http://localhost:8080/categories/api" } }
+	]
+}
