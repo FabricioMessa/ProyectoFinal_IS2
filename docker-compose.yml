@@ -1,27 +1,83 @@
-version: '3'
+version: '3.8'
+
+# ============================================================================
+# DOCKER COMPOSE - Product System
+# Proyecto Final - Ingeniería de Software II
+# ============================================================================
+# Servicios:
+#   - app:     Aplicación Spring Boot (Java)
+#   - mysql:   Base de datos MySQL
+# ============================================================================
 
 services:
+
+  # --------------------------------------------------------------------------
+  # Aplicación Web Spring Boot
+  # --------------------------------------------------------------------------
   app:
-      image: spring-product-system
-      build:
-            context: .
-            dockerfile: ./Dockerfile
-      depends_on:
-        - demo-mysql
-      ports:
-        - 8080:8080
-      environment:
-        - DATABASE_HOST=demo-mysql
-        - DATABASE_USER=demo_user
-        - DATABASE_PASSWORD=demo_pass
-        - DATABASE_NAME=db_product
-        - DATABASE_PORT=3306
-  demo-mysql:
-    image: mysql:5.6
+    container_name: product-system-app
+    image: product-system:latest
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    depends_on:
+      mysql:
+        condition: service_healthy
     ports:
-          - 3307:3306
+      - "8080:8080"
     environment:
-      - MYSQL_ROOT_PASSWORD=password
-      - MYSQL_DATABASE=db_product
-      - MYSQL_PASSWORD=demo_pass
-      - MYSQL_USER=demo_user
+      - DATABASE_HOST=mysql
+      - DATABASE_USER=demo_user
+      - DATABASE_PASSWORD=demo_pass
+      - DATABASE_NAME=db_product
+      - DATABASE_PORT=3306
+      - SPRING_PROFILES_ACTIVE=prod
+    networks:
+      - product-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # --------------------------------------------------------------------------
+  # Base de Datos MySQL
+  # --------------------------------------------------------------------------
+  mysql:
+    container_name: product-system-db
+    image: mysql:5.7
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: db_product
+      MYSQL_USER: demo_user
+      MYSQL_PASSWORD: demo_pass
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./src/main/resources/db/migration:/docker-entrypoint-initdb.d
+    networks:
+      - product-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+# --------------------------------------------------------------------------
+# Volúmenes persistentes
+# --------------------------------------------------------------------------
+volumes:
+  mysql-data:
+    driver: local
+
+# --------------------------------------------------------------------------
+# Red interna
+# --------------------------------------------------------------------------
+networks:
+  product-network:
+    driver: bridge
