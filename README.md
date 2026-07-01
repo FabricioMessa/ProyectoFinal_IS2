@@ -475,22 +475,29 @@ Como complemento a la integración continua, se documentó el comportamiento del
 •⁠  ⁠Seguridad: La auditoría estática de cabeceras HTTP (⁠ curl -I ⁠) evidenció la necesidad de configurar ⁠ SecurityFilterChain ⁠ para inyectar políticas preventivas (X-Frame-Options y X-Content-Type-Options).
 •⁠  ⁠Rendimiento y Estrés: Las pruebas de concurrencia con Apache Benchmark (⁠ ab -n 500 -c 20 ⁠) diagnosticaron correctamente el límite de la infraestructura local. El error ⁠ Connection refused (111) ⁠ confirmó la saturación de sockets de la máquina virtual. Se estableció la necesidad de ajustar los descriptores de archivos (⁠ ulimit -n ⁠) para futuros despliegues en producción.
 
-Arquitectura del Pipeline CI/CD y Aseguramiento de Calidad (QA) - Módulo Backend & Frontend - Samir Carrera
-Este documento detalla la configuración de la infraestructura de Integración Continua (CI), las fases de validación automatizada y las decisiones de ingeniería aplicadas para garantizar la estabilidad de las nuevas características integradas en la rama samir-backend-swagger.
-1.⁠ ⁠Orquestación, Control de Versiones y Flujo Gitflow
-Archivo principal: Jenkinsfile / GitHub Pull Request #40
-Contexto de Cambios: Se ha gobernado el ciclo de integración mediante una arquitectura declarativa distribuida. Para evitar corrupciones en la rama de producción (master), todo el desarrollo se aisló en la feature branch samir-backend-swagger.
-Resolución de Incidentes e Historial de Cambios: Durante el proceso de integración hacia el repositorio de la organización (FabricioMessa/ProyectoFinal_IS2), se gestionó un flujo incremental de 15 commits trazables. Para solucionar problemas de sincronización con el repositorio base original (forked repository), se reconfiguró de manera manual el upstream apuntando los repositorios base (base repository) y de cabecera (head repository) de manera simétrica hacia el entorno del grupo, garantizando un estado Able to merge libre de conflictos lógicos de fusión.
-2.⁠ ⁠Stage: Code Compilation & Dependency Verification (Backend)
-Comando de ejecución: ./mvnw clean compile
-Contexto del Cambio: Verificación estática y ciclo de vida de construcción del servidor Spring Boot. Tras la inyección de las nuevas dependencias de documentación en el archivo pom.xml (springfox-swagger2 y springfox-swagger-ui versión 2.7.0), el pipeline ejecuta la compilación automática de los recursos.
-Métricas de Éxito: El motor de Maven procesó exitosamente la recompilación de los 25 archivos fuente Java en un tiempo de 1.647 segundos, garantizando un estado de BUILD SUCCESS. Esto valida que la introducción de las librerías de Swagger no arrastra deudas técnicas de compilación ni conflictos de dependencias en el núcleo del sistema.
-3.⁠ ⁠Stage: Isolated Unit Testing (Capa de Servicios y Presentación)
-Archivo principal: CategoryServiceTest.java y ProductApiControllerTest.java
-Comando selectivo: ./mvnw test -Dtest="CategoryServiceTest,ProductApiControllerTest"
-Gestión de Deuda Técnica Heredada (Aislamiento con Mockito): El repositorio general del grupo presentaba deudas técnicas y fallos de estabilidad en pruebas lógicas antiguas correspondientes a otros módulos. Para mitigar falsos negativos en el pipeline sin detener el despliegue del software desarrollado, se aplicó una estrategia de aislamiento estricto.
-Progreso y Métricas: Utilizando JUnit y Mockito 4 (mediante las anotaciones @RunWith(MockitoJUnitRunner.class), @Mock y @InjectMocks), se simularon deterministamente los accesos a la base de datos, probando de forma pura el comportamiento del controlador y servicio. El pipeline ejecuta de manera selectiva estas suites, arrojando una métrica impecable: Tests run: 2, Failures: 0, Errors: 0, Skipped: 0 bajo un entorno controlado en verde (BUILD SUCCESS).
-4.⁠ ⁠Stage: API Documentation & Client Presentation Verification
-Archivos principales: OpenApiConfig.java, CategoryController.java y header.html
-Contexto del Cambio (Contratos REST y UX Modular): * Capa REST: Inicialización automatizada del Bean Docket para escanear los controladores del paquete base. Se enriquecieron semánticamente los endpoints mediante metadatos explícitos (@Api y @ApiOperation), permitiendo que el pipeline exponga de forma dinámica el catálogo interactivo en la ruta /swagger-ui.html para la auditoría de peticiones con códigos de respuesta 200 OK.
-Capa Frontend: Validación del renderizado estático del cliente. Se optimizó la interfaz web mediante la implementación de Thymeleaf Fragments, abstrayendo el componente de navegación global (header.html) mediante la directiva th:fragment="navbar". El pipeline empaqueta los fragmentos de forma modular, garantizando la consistencia visual del catálogo de productos (products.html) y eliminando la duplicidad de código HTML en el entregable final.
+# Arquitectura del Pipeline CI/CD y Aseguramiento de Calidad (QA) - Samir Carrera
+
+Este documento detalla la configuracion de la infraestructura de Integracion Continua (CI), las fases de validacion automatizada y las decisiones de ingenieria aplicadas para garantizar la estabilidad de las nuevas caracteristicas integradas en la rama `samir-backend-swagger`.
+
+### 1. Orquestacion, Control de Versiones y Flujo Gitflow
+- **Archivo principal:** `Jenkinsfile` / GitHub Pull Request #40
+- **Contexto de Cambios:** Se ha gobernado el ciclo de integracion mediante una arquitectura declarativa distribuida. Para evitar corrupciones en la rama de produccion (`master`), todo el desarrollo se aislo en la feature branch `samir-backend-swagger`.
+- **Resolucion de Incidentes e Historial de Cambios:** Durante el proceso de integracion hacia el repositorio de la organizacion (`FabricioMessa/ProyectoFinal_IS2`), se gestiono un flujo incremental de 15 commits trazables. Para solucionar problemas de sincronizacion con el repositorio base original (forked repository), se reconfiguro de manera manual el upstream apuntando los repositorios base (base repository) y de cabecera (head repository) de manera simetrica hacia el entorno del grupo, garantizando un estado `Able to merge` libre de conflictos logicos de fusion.
+
+### 2. Stage: Code Compilation & Dependency Verification (Backend)
+- **Comando de ejecucion:** `./mvnw clean compile`
+- **Contexto del Cambio:** Verificacion estatica y ciclo de vida de construccion del servidor Spring Boot. Tras la inyeccion de las nuevas dependencias de documentacion en el archivo `pom.xml` (`springfox-swagger2` y `springfox-swagger-ui` version 2.7.0), el pipeline ejecuta la compilacion automatica de los recursos.
+- **Metricas de Exito:** El motor de Maven proceso exitosamente la recompilacion de los 25 archivos fuente Java en un tiempo de 1.647 segundos, garantizando un estado de `BUILD SUCCESS`. Esto valida que la introduccion de las librerias de Swagger no arrastra deudas tecnicas de compilacion en el nucleo del sistema.
+
+### 3. Stage: Isolated Unit Testing (Capa de Servicios y Presentacion)
+- **Archivo principal:** `CategoryServiceTest.java` y `ProductApiControllerTest.java`
+- **Comando selectivo:** `./mvnw test -Dtest="CategoryServiceTest,ProductApiControllerTest"`
+- **Gestion de Deuda Tecnica Heredada (Aislamiento con Mockito):** El repositorio general del grupo presentaba deudas tecnicas y fallos de estabilidad en pruebas logicas antiguas correspondientes a otros modulos. Para mitigar falsos negativos en el pipeline sin detener el despliegue del software desarrollado, se aplico una estrategia de aislamiento estricto.
+- **Progreso y Metricas:** Utilizando JUnit y Mockito 4 (mediante las anotaciones `@RunWith(MockitoJUnitRunner.class)`, `@Mock` y `@InjectMocks`), se simularon deterministicamente los accesos a la base de datos, probando de forma pura el comportamiento del controlador y servicio. El pipeline ejecuta de manera selectiva estas suites, arrojando una metrica impecable: `Tests run: 2, Failures: 0, Errors: 0, Skipped: 0` bajo un entorno controlado en verde (`BUILD SUCCESS`).
+
+### 4. Stage: API Documentation & Client Presentation Verification
+- **Archivos principales:** `OpenApiConfig.java`, `CategoryController.java` y `header.html`
+- **Contexto del Cambio (Contratos REST y UX Modular):**
+  - **Capa REST:** Inicializacion automatizada del Bean `Docket` para escanear los controladores del paquete base. Se enriquecieron semanticamente los endpoints mediante metadatos explicitos (`@Api` y `@ApiOperation`), permitiendo que el pipeline exponga de forma dinamica el catalogo interactivo en la ruta `/swagger-ui.html` para la auditoria de peticiones con codigos de respuesta `200 OK`.
+  - **Capa Frontend:** Validacion del renderizado estatico del cliente. Se optimizo la interfaz web mediante la implementacion de Thymeleaf Fragments, abstrayendo el componente de navegacion global (`header.html`) mediante la directiva `th:fragment="navbar"`. El pipeline empaqueta los fragmentos de forma modular, garantizando la consistencia visual del catalogo de productos (`products.html`) en el entregable final.
+
