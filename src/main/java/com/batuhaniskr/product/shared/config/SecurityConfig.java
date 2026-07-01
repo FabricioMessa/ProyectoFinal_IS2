@@ -5,6 +5,7 @@ import com.batuhaniskr.product.user.application.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,6 +22,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private MyAccessDeniedHandler myAccessDeniedHandler;
 
     @Autowired
+    @Lazy
     private UserService userService;
 
     @Bean
@@ -39,9 +41,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/js/**",
                         "/css/**",
                         "/img/**",
-                        "/webjars/**").permitAll()
+                        "/webjars/**",
+                        "/api/**",
+                        "/swagger-ui.html",
+                        "/swagger-resources/**",
+                        "/v2/api-docs",
+                        "/h2-console/**").permitAll()
                     .antMatchers("/products/delete/**").hasAuthority("ROLE_ADMIN")
                     .anyRequest().authenticated()
+                    .and()
+                .httpBasic()
                     .and()
                 .formLogin()
                     .loginPage("/login")
@@ -59,14 +68,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.authenticationProvider(authenticationProvider());
+        auth.inMemoryAuthentication()
+            .withUser("admin@admin.com").password(new BCryptPasswordEncoder().encode("admin"))
+                .authorities("ROLE_USER", "ROLE_ADMIN")
+            .and()
+            .withUser("user@user.com").password(new BCryptPasswordEncoder().encode("user"))
+                .authorities("ROLE_USER");
     }
 
-    @Bean
-    public DaoAuthenticationProvider authenticationProvider(){
-        DaoAuthenticationProvider auth = new DaoAuthenticationProvider();
-        auth.setUserDetailsService(userService);
-        auth.setPasswordEncoder(passwordEncoder());
-        return auth;
-    }
 }

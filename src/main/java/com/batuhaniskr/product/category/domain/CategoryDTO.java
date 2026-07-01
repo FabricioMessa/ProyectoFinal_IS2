@@ -1,12 +1,15 @@
 package com.batuhaniskr.product.category.domain;
 
 import com.batuhaniskr.product.product.domain.ProductDTO;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Set;
 
 public class CategoryDTO {
     private Integer id;
     private String categoryName;
+
+    @JsonIgnore
     private Set<ProductDTO> productSet;
 
     public Integer getId() {

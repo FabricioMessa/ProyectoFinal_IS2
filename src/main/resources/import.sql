@@ -1,0 +1,13 @@
+INSERT INTO role (id, name) VALUES (1, 'ROLE_USER');
+INSERT INTO role (id, name) VALUES (2, 'ROLE_ADMIN');
+INSERT INTO user (id, username, email, password) VALUES (1, 'admin', 'admin@admin.com', '$2a$10$DowU2FYqMCvMRMOGejQ.muydmFSbAK8EnSqVRqBy7JPLv.5Ni3SSu');
+INSERT INTO user (id, username, email, password) VALUES (2, 'user', 'user@user.com', '$2a$10$DowU2FYqMCvMRMOGejQ.muydmFSbAK8EnSqVRqBy7JPLv.5Ni3SSu');
+INSERT INTO users_roles (user_id, role_id) VALUES (1, 1);
+INSERT INTO users_roles (user_id, role_id) VALUES (1, 2);
+INSERT INTO users_roles (user_id, role_id) VALUES (2, 1);
+INSERT INTO category (id, category_name) VALUES (1, 'Electronica');
+INSERT INTO category (id, category_name) VALUES (2, 'Ropa');
+INSERT INTO category (id, category_name) VALUES (3, 'Alimentos');
+INSERT INTO product (id, name, quantity, price, created_at, updated_at, category_id, user_id) VALUES (1, 'iPhone 15', 50, 999.99, NOW(), NOW(), 1, 1);
+INSERT INTO product (id, name, quantity, price, created_at, updated_at, category_id, user_id) VALUES (2, 'MacBook Pro', 30, 2499.99, NOW(), NOW(), 1, 1);
+INSERT INTO product (id, name, quantity, price, created_at, updated_at, category_id, user_id) VALUES (3, 'Camiseta Nike', 100, 29.99, NOW(), NOW(), 2, 1);
